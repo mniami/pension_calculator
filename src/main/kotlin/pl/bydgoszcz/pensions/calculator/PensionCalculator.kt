@@ -5,36 +5,49 @@ import java.math.MathContext
 import java.math.RoundingMode
 import java.text.NumberFormat
 
-class PensionCalculator {
-    fun calculate(monthContribution: BigDecimal, investmentTime: InvestmentTime, rateOfReturn: BigDecimal): InvestmentResult {
+typealias Money = BigDecimal
+typealias PercentValue = BigDecimal
 
-        val minMargin = BigDecimal(60)
-        var capital = BigDecimal.ZERO
+class PensionCalculator {
+    private val monthsInYear = 12
+
+    fun calculate(contributionPerMonth: Money,
+                  investmentTime: InvestmentTime,
+                  rateOfReturn: Money,
+                  taxPercent: Money = Money(19),
+                  capitalMarginPercent: Money = Money(0.1)): InvestmentResult {
+
+
+        val minMargin = Money(60)
+        var capital = Money.ZERO
         val mathContext = MathContext(4, RoundingMode.HALF_EVEN)
-        val contribution = monthContribution.multiply(BigDecimal(12), mathContext)
-        val taxPercantage = BigDecimal.ONE - BigDecimal(19).divide(BigDecimal(100), mathContext)
-        val capitalMargin = BigDecimal(1).divide(BigDecimal(1000), mathContext)
-        val rateOfReturnNormalized = rateOfReturn.divide(BigDecimal(100), mathContext)
-        var payedCapital = BigDecimal.ZERO
+        val contribution = contributionPerMonth
+        val taxPercentNormalized = Money.ONE - taxPercent.divide(Money(100), mathContext)
+        val capitalMargin = capitalMarginPercent.divide(Money(100), mathContext)
+        val rateOfReturnNormalized = rateOfReturn.divide(Money(100), mathContext)
+        var payedCapital = Money.ZERO
         val formatter = NumberFormat.getCurrencyInstance()
 
         println("YEAR\tCAPITAL\n" +
                 "---------------")
+
         for (year in 0..investmentTime.getYears()) {
             payedCapital += contribution
             capital += contribution
 
             var investGain = capital.multiply(rateOfReturnNormalized, mathContext)
             var margin = investGain.multiply(capitalMargin, mathContext)
+
             if (margin < minMargin) {
                 margin = minMargin
             }
             investGain -= margin
-            var gainAfterTax = investGain.multiply(taxPercantage, mathContext)
-            if (gainAfterTax < BigDecimal.ZERO) {
-                gainAfterTax = BigDecimal.ZERO
+
+            var gainAfterTax = investGain.multiply(taxPercentNormalized, mathContext)
+            if (gainAfterTax < Money.ZERO) {
+                gainAfterTax = Money.ZERO
             }
-            var netGain = gainAfterTax
+            val netGain = gainAfterTax
 
             capital += netGain
             println(String.format("%s\t\t%s", year, formatter.format(capital)))
@@ -42,14 +55,21 @@ class PensionCalculator {
 
         return InvestmentResult(payedCapital, capital - payedCapital, capital)
     }
-}
 
-class InvestmentTime(var months: Int = 0) {
-    fun getYears(): Int = months / 12
-    fun applyFromYears(years: Int): InvestmentTime {
-        months = years * 12
-        return this
+    fun play(contributionPerMonth: Money,
+             investmentTime: InvestmentTime,
+             rateOfReturn: Money,
+             taxPercent: Money = Money(19),
+             capitalMarginPercent: Money = Money(0.1)) {
+        val bankDepositParameters = BankDepositParameters(rateOfReturn, capitalMarginPercent)
+        val parameters = InvestmentParameters(
+                contributionPerMonth,
+                Money(0),
+                investmentTime.months,
+                taxPercent,
+                bankDepositParameters)
+        val process = InvestmentProcess(parameters)
+
+        process.process()
     }
 }
-
-data class InvestmentResult(val payedCapital: BigDecimal, val investmentGain: BigDecimal, val totalCapital: BigDecimal)
