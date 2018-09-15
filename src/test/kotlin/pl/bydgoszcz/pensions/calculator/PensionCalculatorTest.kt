@@ -11,7 +11,12 @@ class PensionCalculatorTest {
     @Test
     fun pensionCalculation() {
         val calculator = PensionCalculator()
+
+
         val result = calculator.calculate(BigDecimal(3000), InvestmentTime().applyFromYears(26), BigDecimal(4))
+
+
+        // getting result
         val mathContext = MathContext(4)
         val yearsOfPension = 20
         val pensionOnMonth = result.totalCapital.divide(BigDecimal(yearsOfPension * 12), mathContext)

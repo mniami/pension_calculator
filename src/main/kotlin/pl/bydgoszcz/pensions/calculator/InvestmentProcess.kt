@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.math.MathContext
 
 class InvestmentProcess(private val parameters: InvestmentParameters) {
-    fun process() {
+    fun process(): InvestmentResult {
         val mathContext = MathContext(4)
         val taxPercentNormalized = BigDecimal.ONE - parameters.taxForIncome.divide(Money(100), mathContext)
 
@@ -12,17 +12,23 @@ class InvestmentProcess(private val parameters: InvestmentParameters) {
         val market = Market()
 
         val wallet = InvestmentWallet(parameters.initialCapital)
-        val savingsInvestment = SavingsInvestment(wallet, parameters.monthContribution)
+        val savings = SavingsInvestment(wallet, parameters.monthContribution)
         val financialRegulations = FinancialRegulations(taxPercentNormalized)
-        val tfiInvestment = BankDepositInvestment(parameters.bankDepositParameters)
+        val bankDeposit = BankDepositInvestment(parameters.bankDepositParameters)
 
-        val steps: List<Investment> = listOf(savingsInvestment, tfiInvestment)
+        val steps: List<Investment> = listOf(savings, bankDeposit)
+        val reports: MutableList<InvestmentReport> = mutableListOf()
 
         while (time.value < parameters.monthsCount) {
             steps.forEach { step ->
-                step.process(wallet, time, market, mathContext, financialRegulations)
+                reports.add(step.process(wallet, time, market, mathContext, financialRegulations))
             }
             time.value++
         }
+        val bankDepositReport = reports.last { it is BankDepositReport } as BankDepositReport?
+        val investGain = bankDepositReport?.investGain ?: Money(0)
+
+        //TODO refactor investment result, to work with reports
+        return InvestmentResult(wallet.contributedCapital, investGain, wallet.capital)
     }
 }
