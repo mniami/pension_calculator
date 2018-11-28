@@ -1,3 +1,9 @@
 package pl.bydgoszcz.pensions.calculator
 
-data class Time(var value: Int)
+import java.math.BigDecimal
+
+data class Time(var value: Int) {
+    companion object {
+        val Months = BigDecimal(12)
+    }
+}

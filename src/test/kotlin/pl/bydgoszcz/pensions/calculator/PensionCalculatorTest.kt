@@ -1,9 +1,8 @@
 package pl.bydgoszcz.pensions.calculator
 
 import org.testng.Assert.assertEquals
+import org.testng.Assert.assertTrue
 import org.testng.annotations.Test
-import java.math.BigDecimal
-import java.math.MathContext
 import java.text.NumberFormat
 
 class PensionCalculatorTest {
@@ -11,15 +10,13 @@ class PensionCalculatorTest {
     @Test
     fun pensionCalculation() {
         val calculator = PensionCalculator()
-
-
-        val result = calculator.calculate(BigDecimal(3000), InvestmentTime().applyFromYears(26), BigDecimal(4))
-
-
+        val result = calculator.calculate(
+                contributionPerMonth = Money(3000),
+                investmentTime = InvestmentTime().applyFromYears(25),
+                rateOfReturn = Money(2))
         // getting result
-        val mathContext = MathContext(4)
         val yearsOfPension = 20
-        val pensionOnMonth = result.totalCapital.divide(BigDecimal(yearsOfPension * 12), mathContext)
+        val pensionOnMonth = result.totalCapital / Money(yearsOfPension * 12)
 
         println(String.format("Input: \t\t\t\t%s\n" +
                 "Investment gain: \t%s\n" +
@@ -29,11 +26,17 @@ class PensionCalculatorTest {
                 formatter.format(result.investmentGain),
                 formatter.format(result.totalCapital),
                 formatter.format(pensionOnMonth)))
+
+        result.wallet.getCapitals()
+                .forEach { println(String.format("%s = %s", it.key.name, it.value)) }
+
+        assertEquals(result.payedCapital, Money(900000))
+        assertTrue(result.totalCapital < Money(4000000))
     }
 
     @Test
     fun rentFlat() {
-        RentRoomsInvestment(RentRoomsParameters(0.0, 11000.0, 220000.0, 2500.0), 26, 30).calculate {
+        RentRoomsInvestment(RentRoomsParameters(0.0, 11000.0, 220000.0, 2500.0), 25, 25).calculate {
             //            if (it.result.year % 4 == 0 && random.nextBoolean()){
 //                it.parameters.tfiGainPerc = -2.0
 //            }
@@ -101,9 +104,5 @@ class PensionCalculatorTest {
         }
     }
 
-    @Test
-    fun investmentWallet() {
-
-    }
 }
 

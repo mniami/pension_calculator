@@ -1,26 +1,44 @@
 package pl.bydgoszcz.pensions.calculator
 
-import java.math.BigDecimal
-
-class InvestmentWallet(val initialCapital: Money = BigDecimal.ZERO) {
-    private val capitalValue: Money = Money(initialCapital.longValueExact())
-
-    fun addCapital(amount: Money): InvestmentAction {
-        val oldValue = capitalValue
-        capitalValue.add(amount)
-        return CapitalValueIncreased(oldValue, capitalValue)
+class InvestmentWallet(private val initialCapital: Money = Money.ZERO) {
+    companion object {
+        val MAIN_WALLET_GROUP = WalletGroup("Main")
     }
 
-    val contributedCapital: Money
-        get() {
-            return capitalValue.minus(initialCapital)
+    private var capitalMap: MutableMap<WalletGroup, Money> = hashMapOf()
+    private val walletGroups: List<WalletGroup> = emptyList()
+
+    init {
+        capitalMap[MAIN_WALLET_GROUP] = initialCapital
+    }
+
+    fun getCapitals(): Map<WalletGroup, Money> {
+        return capitalMap.toMap()
+    }
+
+    fun addCapital(amount: Money, walletGroup: WalletGroup): InvestmentAction {
+        var oldValue = capitalMap[walletGroup]
+        if (oldValue == null) {
+            oldValue = Money(0)
         }
+        val newValue = oldValue + amount
+        capitalMap[walletGroup] = newValue
+        return CapitalValueIncreased(oldValue, newValue)
+    }
 
-    val capital: Money
-        get() {
-            return capitalValue
+    fun getCapital(walletGroup: WalletGroup): Money {
+        return capitalMap[walletGroup] ?: Money(0)
+    }
+
+    fun getTotalCapital(): Money {
+        var sum = Money(0)
+        for (value in capitalMap.values) {
+            sum += value
         }
+        return sum
+    }
 
-
-    class CapitalValueIncreased(val oldValue: Money, val capitalValue: Money) : InvestmentAction
+    data class CapitalValueIncreased(val oldValue: Money, val capitalValue: Money) : InvestmentAction
 }
+
+class WalletGroup(val name: String)

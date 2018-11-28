@@ -1,3 +1,3 @@
 package pl.bydgoszcz.pensions.calculator
 
-class ActionsInvestmentReport(vararg action: InvestmentAction) : InvestmentReport
+class ActionsInvestmentReport(val action: InvestmentAction) : InvestmentReport

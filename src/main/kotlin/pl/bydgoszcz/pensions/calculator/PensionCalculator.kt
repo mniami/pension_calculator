@@ -1,10 +1,5 @@
 package pl.bydgoszcz.pensions.calculator
 
-import java.math.BigDecimal
-
-typealias Money = BigDecimal
-typealias PercentValue = BigDecimal
-
 class PensionCalculator {
     fun calculate(contributionPerMonth: Money,
                   investmentTime: InvestmentTime,

@@ -1,31 +1,31 @@
 package pl.bydgoszcz.pensions.calculator
 
-import java.math.BigDecimal
-import java.math.MathContext
-
 class BankDepositInvestment(var bankDepositParameters: BankDepositParameters) : Investment {
-    override fun process(wallet: InvestmentWallet, time: Time, market: Market, mathContext: MathContext, financialRegulations: FinancialRegulations): InvestmentReport {
-        val capitalMargin = bankDepositParameters.capitalMarginPercent.divide(Money(100), mathContext)
-        val rateOfReturnNormalized = bankDepositParameters.rateOfReturnPercent.divide(Money(100), mathContext)
-        var investGain = wallet.capital.multiply(rateOfReturnNormalized, mathContext)
+    companion object {
+        val DEPOSIT_WALLET_GROUP = WalletGroup("Deposit wallet group")
+    }
+
+    override fun process(wallet: InvestmentWallet, time: Time, market: Market, financialRegulations: FinancialRegulations): InvestmentReport {
+        val capitalMargin = bankDepositParameters.capitalMarginPercent.toPercent()
+        val rateOfReturnNormalized = bankDepositParameters.rateOfReturnPercent.toPercent()
+        var investGain = wallet.getTotalCapital() * rateOfReturnNormalized
         // Fee or costs of the
-        var margin = investGain.multiply(capitalMargin, mathContext)
-        val minMargin = Money(60)
+        var margin = investGain / capitalMargin
+        val minMargin = Money(0)
 
         if (margin < minMargin) {
             margin = minMargin
         }
         investGain -= margin
 
-        var gainAfterTax = investGain.multiply(financialRegulations.taxPercent, mathContext)
-        if (gainAfterTax < BigDecimal.ZERO) {
-            gainAfterTax = BigDecimal.ZERO
+        var gainAfterTax = investGain * financialRegulations.taxPercent
+        if (gainAfterTax < Money.ZERO) {
+            gainAfterTax = Money.ZERO
         }
         val netGain = gainAfterTax
         val paidTax = investGain.minus(gainAfterTax)
+        val actionResult = wallet.addCapital(netGain, DEPOSIT_WALLET_GROUP)
 
-        wallet.addCapital(netGain)
-
-        return BankDepositReport(investGain, netGain, paidTax, margin)
+        return BankDepositReport(investGain, netGain, paidTax, margin, time, actionResult)
     }
 }
