@@ -1,6 +1,6 @@
 package pl.bydgoszcz.pensions.calculator
 
-class InvestmentWallet(private val initialCapital: Money = Money.ZERO) {
+class InvestmentWallet(initialCapital: Money = Money.ZERO) {
     companion object {
         val MAIN_WALLET_GROUP = WalletGroup("Main")
     }
@@ -41,4 +41,3 @@ class InvestmentWallet(private val initialCapital: Money = Money.ZERO) {
     data class CapitalValueIncreased(val oldValue: Money, val capitalValue: Money) : InvestmentAction
 }
 
-class WalletGroup(val name: String)

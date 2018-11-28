@@ -3,19 +3,16 @@ package pl.bydgoszcz.pensions.calculator
 import org.testng.Assert.assertEquals
 import org.testng.annotations.BeforeTest
 import org.testng.annotations.Test
-import java.math.MathContext
 
 class BankDepositInvestmentTest {
     lateinit var victim: BankDepositInvestment
     lateinit var wallet: InvestmentWallet
     lateinit var time: Time
     lateinit var market: Market
-    lateinit var mathContext: MathContext
     lateinit var financialRegulations: FinancialRegulations
 
     @BeforeTest
     fun beforeTest() {
-        mathContext = MathContext.DECIMAL32
         financialRegulations = FinancialRegulations(taxPercent = Money(0.2))
         market = Market()
         time = Time(1)

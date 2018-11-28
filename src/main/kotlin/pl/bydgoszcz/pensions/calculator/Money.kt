@@ -2,10 +2,12 @@ package pl.bydgoszcz.pensions.calculator
 
 import java.math.BigDecimal
 import java.math.MathContext
+import java.math.RoundingMode
 
 typealias PercentValue = Money
 
 val MATH_CONTEXT = MathContext.DECIMAL64
+val MATH_SCALE = 4
 
 class Money {
     companion object {
@@ -21,11 +23,11 @@ class Money {
     }
 
     constructor(value: Double) {
-        this.value = BigDecimal(value, MATH_CONTEXT)
+        this.value = BigDecimal(value, MATH_CONTEXT).setScale(MATH_SCALE, RoundingMode.HALF_UP)
     }
 
     constructor(value: Int) {
-        this.value = BigDecimal(value, MATH_CONTEXT)
+        this.value = BigDecimal(value, MATH_CONTEXT).setScale(MATH_SCALE, RoundingMode.HALF_UP)
     }
 
     operator fun plus(money: Money): Money {
@@ -37,11 +39,11 @@ class Money {
     }
 
     operator fun div(money: Money): Money {
-        return Money(this.value.divide(money.value, MATH_CONTEXT))
+        return Money(this.value.divide(money.value, MATH_CONTEXT).setScale(MATH_SCALE, RoundingMode.HALF_UP))
     }
 
     operator fun times(money: Money): Money {
-        return Money(this.value.multiply(money.value))
+        return Money(this.value.multiply(money.value).setScale(MATH_SCALE, RoundingMode.HALF_UP))
     }
 
     fun toPercent(): Money {

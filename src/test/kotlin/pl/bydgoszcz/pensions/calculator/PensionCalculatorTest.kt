@@ -1,7 +1,6 @@
 package pl.bydgoszcz.pensions.calculator
 
 import org.testng.Assert.assertEquals
-import org.testng.Assert.assertTrue
 import org.testng.annotations.Test
 import java.text.NumberFormat
 
@@ -13,25 +12,25 @@ class PensionCalculatorTest {
         val result = calculator.calculate(
                 contributionPerMonth = Money(3000),
                 investmentTime = InvestmentTime().applyFromYears(25),
-                rateOfReturn = Money(2))
+                rateOfReturn = Money(0.02))
         // getting result
-        val yearsOfPension = 20
+        val yearsOfPension = 25
         val pensionOnMonth = result.totalCapital / Money(yearsOfPension * 12)
 
         println(String.format("Input: \t\t\t\t%s\n" +
                 "Investment gain: \t%s\n" +
                 "Total capital: \t\t%s\n" +
                 "Pension on month: \t%s",
-                formatter.format(result.payedCapital),
-                formatter.format(result.investmentGain),
-                formatter.format(result.totalCapital),
-                formatter.format(pensionOnMonth)))
+                formatter.format(result.payedCapital.value),
+                formatter.format(result.investmentGain.value),
+                formatter.format(result.totalCapital.value),
+                formatter.format(pensionOnMonth.value)))
 
         result.wallet.getCapitals()
                 .forEach { println(String.format("%s = %s", it.key.name, it.value)) }
 
         assertEquals(result.payedCapital, Money(900000))
-        assertTrue(result.totalCapital < Money(4000000))
+        assertEquals(result.totalCapital, Money(1571148.5362))
     }
 
     @Test
