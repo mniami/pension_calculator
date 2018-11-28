@@ -16,13 +16,13 @@ class BankDepositInvestmentTest {
     @BeforeTest
     fun beforeTest() {
         mathContext = MathContext.DECIMAL32
-        financialRegulations = FinancialRegulations(taxPercent = Money(20))
+        financialRegulations = FinancialRegulations(taxPercent = Money(0.2))
         market = Market()
         time = Time(1)
         wallet = InvestmentWallet(initialCapital = Money(1000))
         val params = BankDepositParameters(
-                rateOfReturnPercent = PercentValue(2),
-                capitalMarginPercent = PercentValue(2))
+                rateOfReturnPercent = PercentValue(0.02),
+                capitalMarginPercent = PercentValue(0.02))
         victim = BankDepositInvestment(params)
     }
 
@@ -30,6 +30,7 @@ class BankDepositInvestmentTest {
     fun testProcess() {
         val report = victim.process(wallet, time, market, financialRegulations) as BankDepositReport
         assertEquals(report.investGain, Money(19.6), "Invest gain")
-        assertEquals(wallet.getTotalCapital(), Money(1008), "Total capital")
+        assertEquals(report.tax, Money(3.92), "Invest gain")
+        assertEquals(wallet.getTotalCapital(), Money(1015.68), "Total capital")
     }
 }

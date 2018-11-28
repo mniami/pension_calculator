@@ -6,11 +6,11 @@ class BankDepositInvestment(var bankDepositParameters: BankDepositParameters) : 
     }
 
     override fun process(wallet: InvestmentWallet, time: Time, market: Market, financialRegulations: FinancialRegulations): InvestmentReport {
-        val capitalMargin = bankDepositParameters.capitalMarginPercent.toPercent()
-        val rateOfReturnNormalized = bankDepositParameters.rateOfReturnPercent.toPercent()
+        val capitalMargin = bankDepositParameters.capitalMarginPercent
+        val rateOfReturnNormalized = bankDepositParameters.rateOfReturnPercent
         var investGain = wallet.getTotalCapital() * rateOfReturnNormalized
         // Fee or costs of the
-        var margin = investGain / capitalMargin
+        var margin = investGain * capitalMargin
         val minMargin = Money(0)
 
         if (margin < minMargin) {
@@ -18,14 +18,10 @@ class BankDepositInvestment(var bankDepositParameters: BankDepositParameters) : 
         }
         investGain -= margin
 
-        var gainAfterTax = investGain * financialRegulations.taxPercent
-        if (gainAfterTax < Money.ZERO) {
-            gainAfterTax = Money.ZERO
-        }
-        val netGain = gainAfterTax
-        val paidTax = investGain.minus(gainAfterTax)
+        val tax = investGain * financialRegulations.taxPercent
+        val netGain = investGain - tax
         val actionResult = wallet.addCapital(netGain, DEPOSIT_WALLET_GROUP)
 
-        return BankDepositReport(investGain, netGain, paidTax, margin, time, actionResult)
+        return BankDepositReport(investGain, netGain, tax, margin, time, actionResult)
     }
 }

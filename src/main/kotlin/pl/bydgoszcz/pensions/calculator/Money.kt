@@ -5,7 +5,7 @@ import java.math.MathContext
 
 typealias PercentValue = Money
 
-val MATH_CONTEXT = MathContext(4)
+val MATH_CONTEXT = MathContext.DECIMAL64
 
 class Money {
     companion object {
@@ -45,7 +45,7 @@ class Money {
     }
 
     fun toPercent(): Money {
-        return Money(value.divide(HOUNDRED.value, MATH_CONTEXT))
+        return this / HOUNDRED
     }
 
     operator fun compareTo(money: Money): Int {

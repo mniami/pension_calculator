@@ -29,4 +29,9 @@ class MoneyTest {
     fun testToPercent() {
         assertEquals(Money(0.04), Money(4).toPercent())
     }
+
+    @Test
+    fun testConstructor() {
+        assertEquals(1600.000005, Money(1600.000005).value.toDouble(), "measure precision")
+    }
 }
